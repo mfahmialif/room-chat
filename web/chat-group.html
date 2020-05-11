@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Chat Group</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a id="nama" class="navbar-brand" href="#">anonymous</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="home.html?username=anonymous">Home</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="list-group.html?username=anonymous">Group Chat <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="list-private.html?username=anonymous">Private Chat</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="logout.html?username=anonymous">LOGOUT</a>
+                </li>
+
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <hr>
+        <p>Nama Room : <span id="name-room">anonyroom</span></p>
+        <hr>
+        <form id="kirim-pesan" class="sticky-top" style="background-color: white;">
+            <div class="form-group">
+                <label for="isi-pesan">Isi Pesan</label>
+                <input type="isi-pesan" class="form-control" id="isi-pesan" name="isi-pesan">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Kirim</button>
+        </form>
+        <br>
+        <hr>
+        <div id="member">
+            Member : <span id="member-room"></span>
+        </div>
+        <hr>
+        <div id="pesan">
+            Pesannya di sini
+        </div>
+    </div>
+
+    <script>
+        function getMember() {
+            var nameRoom = $("#name-room").html();
+            $.ajax({
+                type: "get",
+                url: "/get-group.json",
+                dataType: "json",
+                success: function(response) {
+                    var member = ""
+                    const objectArray = Object.entries(response);
+                    objectArray.forEach(([key, value]) => {
+                        if (key == nameRoom) {
+                            member = member + value["member"] + " "
+                        }
+                    });
+
+                    $("#member-room").html(member);
+                }
+            });
+        }
+
+        $("#kirim-pesan").submit(function(e) {
+            e.preventDefault();
+            var nama = $("#nama").html();
+            var room = $("#name-room").html();
+            var pesan = $("#isi-pesan").val();
+            $.ajax({
+                type: "get",
+                url: "/kirim-pesan-group.html?username=" + nama + "&room=" + room + "&pesan=" + pesan,
+                success: function(response) {
+                    console.log(response)
+                    $("#isi-pesan").val("");
+                }
+            });
+        });
+
+        function getPesan() {
+            var nameRoom = $("#name-room").html();
+            $.ajax({
+                type: "get",
+                url: "/get-group.json",
+                dataType: "json",
+                success: function(response) {
+                    var member = ""
+                    const objectArray = Object.entries(response);
+                    objectArray.forEach(([key, value]) => {
+                        if (key == nameRoom) {
+                            console.log(value["pesan"])
+                            $("#pesan").empty();
+                            value["pesan"].forEach(element => {
+                                var pesan = "<p>" + element + "</p>"
+                                $("#pesan").append(pesan);
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+
+        setInterval(function() {
+            getMember(), getPesan()
+        }, 500)
+    </script>
+</body>
+
+</html>
